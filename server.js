@@ -1,62 +1,54 @@
-/*var express = require('express');
-var nodemailer=require('nodemailer');
-var app=express();
+var express = require('express');
+var app = express();
 
-var transporter=nodemailer.createTransport({
-	service:'Gmail',
-	auth:{
-		user:'abhikori1994@gmail.com',
-		pass:'abhishekori#gmailp@ssword1994'
-	}
-});
+//var cors = require('cors');
+//app.use(cors());
 
-var mailOptions={
-	from:'Abhi <abhikori1994@gmail>',
-	to:'abhikori123@gmail.com',
-	subject:'hai from node',
-	text:'hai man how are you doing?',
-	html:'<b>Call me may be!</b>'
-}
+var bodyParser=require('body-parser');
+var nodeMailer= require('nodemailer');
 
-transporter.sendMail(mailOptions,function(error,info){
-	if(error){
-		return console.log(error);
-	}
-	console.log("Message sent:"+info.response);
-});
 
-app.listen(3000,function(){
-console.log("yes");	
-})
-*/
-var nodemailer = require('nodemailer');
 
-// create reusable transporter object using SMTP transport
-var transporter = nodemailer.createTransport("SMTP",{
-    service: 'Gmail',
+
+
+app.use(express.static(__dirname+"/public"));
+app.use(bodyParser.json());
+app.post('/send',function (req,res) {
+//	if(!req.body) return res.sendStatus(400);
+
+	console.log(req.body);
+var smtpTransport = nodeMailer.createTransport("SMTP",{
+    service: "Yahoo",
     auth: {
-        user: 'abhikori1994@gmail.com',
-        pass: 'abhishekori#gmailp@ssword1994'
+        user: req.body.emailId,
+        pass: req.body.emailPassword
     }
 });
-
-// NB! No need to recreate the transporter object. You can use
-// the same transporter object for all e-mails
 
 // setup e-mail data with unicode symbols
 var mailOptions = {
-    from: 'Fred Foo ✔ <abhikori1994@gmail>', // sender address
-    to: 'abhikori1994@gmail', // list of receivers
-    subject: 'Hello ✔', // Subject line
-    text: 'Hello world ✔', // plaintext body
-    html: '<b>Hello world ✔</b>' // html body
-};
+    from: req.body.emailId, // sender address
+    to: req.body.to, // list of receivers
+    subject: req.body.subject, // Subject line
+    text: req.body.message, // plaintext body
+    html: "<H1>Hello world ✔</H1>" // html body
+}
 
 // send mail with defined transport object
-transporter.sendMail(mailOptions, function(error, info){
+smtpTransport.sendMail(mailOptions, function(error, response){
     if(error){
-        return console.log(error);
+        console.log(error);
+        res.send(error);
+    }else{
+        console.log("Message sent: " + response.message);
+        res.send("Message sent: " + response.message);
     }
-    console.log('Message sent: ' + info.response);
+
+    // if you don't want to use this transport object anymore, uncomment following line
+    //smtpTransport.close(); // shut down the connection pool, no more messages
+});
 
 });
+
+app.listen(8081);
+console.log("running");
